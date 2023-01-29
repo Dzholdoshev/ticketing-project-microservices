@@ -4,10 +4,12 @@ import com.cydeo.dto.ProjectDTO;
 import com.cydeo.entity.ResponseWrapper;
 import com.cydeo.exception.ProjectServiceException;
 import com.cydeo.service.ProjectService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -21,6 +23,7 @@ public class ProjectController {
     }
 
     @GetMapping
+    @CircuitBreaker(name="user-service",fallbackMethod = "userServiceFallBack")
     public ResponseEntity<ResponseWrapper> getProjects(){
         List<ProjectDTO> projectDTOList = projectService.listAllProjects();
         return ResponseEntity.ok(new ResponseWrapper("Projects are successfully retrieved",projectDTOList, HttpStatus.OK));
@@ -65,4 +68,9 @@ public class ProjectController {
         return ResponseEntity.ok(new ResponseWrapper("Project is successfully completed",HttpStatus.OK));
 
     }
+
+    public List<ProjectDTO> userServiceFallBack(String username,Exception e){
+        return new ArrayList<>();
+    }
+
 }
